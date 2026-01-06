@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Website, Wallet, ViewMode, Token, Page } from '@/lib/types'
+import { Website, Wallet, ViewMode, Token, Page, WebsiteTheme, Transaction } from '@/lib/types'
 import { 
   generateWebsiteId, 
   generateTokenId, 
   generateWalletAddress, 
   calculateWebsiteValue,
   generateWebsiteContent,
-  generatePageContent
+  generatePageContent,
+  generateTransactionId
 } from '@/lib/generators'
 import { CosmicBackground } from '@/components/CosmicBackground'
 import { HomeView } from '@/components/views/HomeView'
@@ -22,6 +23,7 @@ import { toast } from 'sonner'
 function App() {
   const [websites, setWebsites] = useKV<Website[]>('infinity-websites', [])
   const [wallet, setWallet] = useKV<Wallet | null>('infinity-wallet', null)
+  const [transactions, setTransactions] = useKV<Transaction[]>('infinity-transactions', [])
   
   const [viewMode, setViewMode] = useState<ViewMode>('home')
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(null)
@@ -38,7 +40,8 @@ function App() {
       address: generateWalletAddress(),
       balance: 0,
       tokens: [],
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      infinityBalance: 10000
     }
     
     setWallet(newWallet)
@@ -46,7 +49,7 @@ function App() {
     return newWallet
   }
 
-  const handleCreateWebsite = async (query: string) => {
+  const handleCreateWebsite = async (query: string, theme: WebsiteTheme = 'cosmic') => {
     setIsCreating(true)
     
     try {
@@ -69,7 +72,15 @@ function App() {
         value: 1000,
         createdAt: Date.now(),
         lastModified: Date.now(),
-        pages: []
+        pages: [],
+        theme,
+        collaborators: [{
+          wallet: currentWallet.address,
+          role: 'owner',
+          addedAt: Date.now(),
+          addedBy: currentWallet.address
+        }],
+        isListedForSale: false
       }
 
       const newToken: Token = {
@@ -121,7 +132,8 @@ function App() {
         id: `page-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title,
         content,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        author: wallet?.address || 'unknown'
       }
 
       setWebsites((current) =>
@@ -165,6 +177,201 @@ function App() {
     }
   }
 
+  const handleListForSale = (websiteId: string, price: number) => {
+    if (!wallet) return
+
+    setWebsites((current) =>
+      (current || []).map((site) => {
+        if (site.id === websiteId && site.ownerWallet === wallet.address) {
+          return {
+            ...site,
+            isListedForSale: true,
+            salePrice: price
+          }
+        }
+        return site
+      })
+    )
+
+    const transaction: Transaction = {
+      id: generateTransactionId(),
+      type: 'listing',
+      websiteId,
+      from: wallet.address,
+      to: '',
+      amount: price,
+      timestamp: Date.now()
+    }
+
+    setTransactions((current) => [...(current || []), transaction])
+    toast.success('Website listed for sale!')
+  }
+
+  const handleUnlistFromSale = (websiteId: string) => {
+    if (!wallet) return
+
+    setWebsites((current) =>
+      (current || []).map((site) => {
+        if (site.id === websiteId && site.ownerWallet === wallet.address) {
+          return {
+            ...site,
+            isListedForSale: false,
+            salePrice: undefined
+          }
+        }
+        return site
+      })
+    )
+
+    const transaction: Transaction = {
+      id: generateTransactionId(),
+      type: 'delisting',
+      websiteId,
+      from: wallet.address,
+      to: '',
+      amount: 0,
+      timestamp: Date.now()
+    }
+
+    setTransactions((current) => [...(current || []), transaction])
+    toast.success('Website unlisted from marketplace')
+  }
+
+  const handlePurchaseWebsite = (websiteId: string) => {
+    if (!wallet) return
+
+    const website = websites?.find(w => w.id === websiteId)
+    if (!website || !website.isListedForSale || !website.salePrice) {
+      toast.error('Website not available for purchase')
+      return
+    }
+
+    if (wallet.infinityBalance < website.salePrice) {
+      toast.error('Insufficient Infinity (∞) balance')
+      return
+    }
+
+    const sellerWallet = website.ownerWallet
+    const price = website.salePrice
+
+    setWallet((currentWallet) => {
+      if (!currentWallet) return null
+      return {
+        ...currentWallet,
+        infinityBalance: currentWallet.infinityBalance - price,
+        balance: currentWallet.balance + website.value,
+        tokens: [
+          ...currentWallet.tokens,
+          {
+            id: website.tokenId,
+            websiteId: website.id,
+            websiteUrl: website.url,
+            ownerWallet: currentWallet.address,
+            value: website.value,
+            createdAt: website.createdAt,
+            metadata: {
+              title: website.title,
+              description: website.description,
+              query: website.query
+            }
+          }
+        ]
+      }
+    })
+
+    setWebsites((current) =>
+      (current || []).map((site) => {
+        if (site.id === websiteId) {
+          return {
+            ...site,
+            ownerWallet: wallet.address,
+            isListedForSale: false,
+            salePrice: undefined,
+            collaborators: [
+              {
+                wallet: wallet.address,
+                role: 'owner',
+                addedAt: Date.now(),
+                addedBy: wallet.address
+              },
+              ...site.collaborators.filter(c => c.role !== 'owner')
+            ]
+          }
+        }
+        return site
+      })
+    )
+
+    const transaction: Transaction = {
+      id: generateTransactionId(),
+      type: 'purchase',
+      websiteId,
+      from: wallet.address,
+      to: sellerWallet,
+      amount: price,
+      timestamp: Date.now()
+    }
+
+    setTransactions((current) => [...(current || []), transaction])
+    toast.success(`Website purchased for ${price} ∞!`)
+  }
+
+  const handleAddCollaborator = (websiteId: string, collaboratorWallet: string, role: 'editor' | 'viewer') => {
+    if (!wallet) return
+
+    const website = websites?.find(w => w.id === websiteId)
+    if (!website || website.ownerWallet !== wallet.address) {
+      toast.error('Only the owner can add collaborators')
+      return
+    }
+
+    const existing = website.collaborators.find(c => c.wallet === collaboratorWallet)
+    if (existing) {
+      toast.error('User is already a collaborator')
+      return
+    }
+
+    setWebsites((current) =>
+      (current || []).map((site) => {
+        if (site.id === websiteId) {
+          return {
+            ...site,
+            collaborators: [
+              ...site.collaborators,
+              {
+                wallet: collaboratorWallet,
+                role,
+                addedAt: Date.now(),
+                addedBy: wallet.address
+              }
+            ]
+          }
+        }
+        return site
+      })
+    )
+
+    toast.success(`Collaborator added as ${role}`)
+  }
+
+  const handleRemoveCollaborator = (websiteId: string, collaboratorWallet: string) => {
+    if (!wallet) return
+
+    setWebsites((current) =>
+      (current || []).map((site) => {
+        if (site.id === websiteId && site.ownerWallet === wallet.address) {
+          return {
+            ...site,
+            collaborators: site.collaborators.filter(c => c.wallet !== collaboratorWallet || c.role === 'owner')
+          }
+        }
+        return site
+      })
+    )
+
+    toast.success('Collaborator removed')
+  }
+
   const handleViewWebsite = (websiteId: string) => {
     setSelectedWebsiteId(websiteId)
     setViewMode('website')
@@ -182,16 +389,16 @@ function App() {
       
       {viewMode === 'home' && (
         <>
-          <nav className="absolute top-0 right-0 p-6 flex gap-3 z-20">
+          <nav className="absolute top-0 right-0 p-4 md:p-6 z-20 max-w-full">
             {wallet && (
-              <>
+              <div className="flex flex-wrap gap-2 md:gap-3 justify-end">
                 <Button
                   variant="outline"
                   className="cosmic-border gap-2"
                   onClick={() => setViewMode('wallet')}
                 >
                   <WalletIcon size={20} />
-                  Wallet
+                  <span className="hidden sm:inline">Wallet</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -199,9 +406,9 @@ function App() {
                   onClick={() => setViewMode('marketplace')}
                 >
                   <Storefront size={20} />
-                  Marketplace
+                  <span className="hidden sm:inline">Marketplace</span>
                 </Button>
-              </>
+              </div>
             )}
           </nav>
           <HomeView onCreateWebsite={handleCreateWebsite} isCreating={isCreating} />
@@ -215,6 +422,10 @@ function App() {
           onBack={handleBack}
           onAddPage={handleAddPage}
           isAddingPage={isAddingPage}
+          onListForSale={handleListForSale}
+          onUnlistFromSale={handleUnlistFromSale}
+          onAddCollaborator={handleAddCollaborator}
+          onRemoveCollaborator={handleRemoveCollaborator}
         />
       )}
 
@@ -229,9 +440,10 @@ function App() {
       {viewMode === 'marketplace' && (
         <MarketplaceView
           websites={websites || []}
-          currentWallet={wallet?.address || null}
+          currentWallet={wallet || null}
           onBack={handleBack}
           onViewWebsite={handleViewWebsite}
+          onPurchase={handlePurchaseWebsite}
         />
       )}
 

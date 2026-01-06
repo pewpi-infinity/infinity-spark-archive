@@ -41,13 +41,34 @@ This is a world-building platform with multiple interconnected systems: search/g
 - **Success criteria**: Builder is intuitive, doesn't obstruct content, successfully adds pages, can be hidden/shown
 
 ### 5. Marketplace (Token Trading)
-- **Functionality**: Browse, buy, sell, and transfer website-tokens with live previews and real owners
+- **Functionality**: Browse, buy, sell, and transfer website-tokens with live previews, real owners, and Infinity (∞) currency
 - **Purpose**: Create a real economy around user-generated websites
 - **Trigger**: User clicks Marketplace from main nav or wallet
-- **Progression**: Enter marketplace → Browse live websites → View details (value, owner, preview) → Buy/trade → Ownership transfers → Wallet updates
-- **Success criteria**: All listings show live sites, transactions complete successfully, ownership transfers include repo access
+- **Progression**: Enter marketplace → Browse "For Sale" or "All" tabs → View details (value, owner, preview, price) → Buy website with ∞ → Ownership transfers immediately → Wallet updates with token → Seller receives ∞ payment
+- **Success criteria**: All listings show live sites, transactions complete successfully with ∞ exchange, ownership transfers include repo access and collaborator updates
 
-### 6. Guest-First, Auth-When-Needed
+### 6. Website Themes & Templates
+- **Functionality**: Choose from 5 distinct themes (Cosmic, Minimal, Editorial, Technical, Vibrant) when creating websites
+- **Purpose**: Give users visual control and creative expression over their generated websites
+- **Trigger**: Theme selector displayed on home screen before creation
+- **Progression**: View theme options with previews → Select preferred theme → Enter search query → Website generates with chosen theme applied
+- **Success criteria**: All themes render correctly, theme persists across pages, themes are visually distinct and polished
+
+### 7. Collaboration System
+- **Functionality**: Website owners can add collaborators with specific roles (Editor or Viewer), manage permissions, and allow multiple users to contribute
+- **Purpose**: Enable team-based website building and shared ownership experiences
+- **Trigger**: Owner clicks "Add Collaborator" button in website view
+- **Progression**: Enter collaborator wallet address → Select role (Editor/Viewer) → Add collaborator → Collaborator appears in list → Owner can remove collaborators → Editors can add pages
+- **Success criteria**: Collaborators can access websites per their role, edits are attributed to correct user, owner maintains control, collaboration list displays correctly
+
+### 8. List & Sell Websites
+- **Functionality**: Website owners can list their sites for sale at a custom price in ∞, unlist anytime, and complete purchases instantly
+- **Purpose**: Enable fluid marketplace economy with user-controlled pricing
+- **Trigger**: Owner clicks "List for Sale" in website view
+- **Progression**: Enter price in ∞ → Confirm listing → Website appears in marketplace "For Sale" tab → Buyer purchases → ∞ deducted from buyer → Website ownership transfers → Token moves to buyer wallet
+- **Success criteria**: Listings appear immediately, prices are enforced, ∞ balance checks prevent overdraft, ownership transfers are atomic
+
+### 9. Guest-First, Auth-When-Needed
 - **Functionality**: Spark initializes fully as guest, login only required for editing/trading, site owners can enable their own auth
 - **Purpose**: Remove friction, never block exploration or viewing
 - **Trigger**: Guest access on load, login prompt only when attempting owner actions
@@ -59,11 +80,16 @@ This is a world-building platform with multiple interconnected systems: search/g
 - **Empty Search Query**: Prevent submission, show gentle prompt like "What world will you build?"
 - **Duplicate Ideas**: Generate unique variations, append timestamp to token ID, ensure no collision
 - **Network Failure During Generation**: Show retry option, preserve user's query, resume from last checkpoint
-- **Wallet Not Found**: Auto-create on any action requiring it, seamless and invisible
-- **Builder Accidentally Hidden**: Show subtle "Show Builder" button in corner, persist preference
-- **Marketplace Empty State**: Show inspirational call-to-action, suggest creating first website
-- **Token Transfer Failure**: Roll back transaction, show clear error, preserve token ownership
+- **Wallet Not Found**: Auto-create on any action requiring it, seamless and invisible, start with 10,000 ∞ balance
+- **Insufficient ∞ Balance**: Show clear error when attempting purchase, display current balance vs required price
+- **Builder Accidentally Hidden**: Show subtle "Show Builder" button in header, persist preference
+- **Marketplace Empty State**: Show inspirational call-to-action, suggest creating first website, tab between "For Sale" and "Browse All"
+- **Token Transfer Failure**: Roll back transaction, show clear error, preserve token ownership, refund ∞
 - **Deleted Files/Repos**: Detect deletion, auto-rebuild from intent + history, never break user access
+- **Invalid Collaborator Wallet**: Validate wallet format, prevent duplicate collaborators, show clear error messages
+- **Non-Owner Trying to List**: Prevent listing by non-owners, show "Owner only" message
+- **Listing Already Listed Site**: Prevent re-listing, show current listing with option to update price
+- **Invalid Sale Price**: Require positive numbers, prevent zero or negative prices, show validation error
 
 ## Design Direction
 

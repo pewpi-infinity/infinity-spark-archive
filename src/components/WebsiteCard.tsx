@@ -2,16 +2,18 @@ import { Website } from '@/lib/types'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatValue, formatDate, formatWalletAddress } from '@/lib/generators'
-import { Eye, Crown } from '@phosphor-icons/react'
+import { Eye, Crown, ShoppingCart } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 
 interface WebsiteCardProps {
   website: Website
   isOwned?: boolean
   onView: () => void
+  onPurchase?: () => void
+  showPurchase?: boolean
 }
 
-export function WebsiteCard({ website, isOwned = false, onView }: WebsiteCardProps) {
+export function WebsiteCard({ website, isOwned = false, onView, onPurchase, showPurchase = false }: WebsiteCardProps) {
   return (
     <Card className="cosmic-border bg-card/80 backdrop-blur-sm hover:scale-[1.02] transition-all duration-300 overflow-hidden group cursor-pointer">
       <div className="p-6" onClick={onView}>
@@ -38,9 +40,14 @@ export function WebsiteCard({ website, isOwned = false, onView }: WebsiteCardPro
           <Badge variant="outline" className="text-accent border-accent/50">
             {formatValue(website.value)}
           </Badge>
+          {website.isListedForSale && website.salePrice && (
+            <Badge className="bg-accent text-accent-foreground">
+              {website.salePrice.toLocaleString()} ∞
+            </Badge>
+          )}
         </div>
 
-        <div className="space-y-2 text-sm text-muted-foreground">
+        <div className="space-y-2 text-sm text-muted-foreground mb-4">
           <div className="flex justify-between">
             <span>Owner:</span>
             <span className="font-mono">{formatWalletAddress(website.ownerWallet)}</span>
@@ -53,19 +60,38 @@ export function WebsiteCard({ website, isOwned = false, onView }: WebsiteCardPro
             <span>Pages:</span>
             <span>{website.pages.length} page{website.pages.length !== 1 ? 's' : ''}</span>
           </div>
+          {website.collaborators.length > 1 && (
+            <div className="flex justify-between">
+              <span>Collaborators:</span>
+              <span>{website.collaborators.length - 1}</span>
+            </div>
+          )}
         </div>
 
-        <Button
-          className="w-full mt-4 cosmic-glow"
-          variant="outline"
-          onClick={(e) => {
-            e.stopPropagation()
-            onView()
-          }}
-        >
-          <Eye size={18} className="mr-2" />
-          View Website
-        </Button>
+        {showPurchase && website.isListedForSale && website.salePrice && onPurchase ? (
+          <Button
+            className="w-full cosmic-glow bg-accent text-accent-foreground hover:bg-accent/90"
+            onClick={(e) => {
+              e.stopPropagation()
+              onPurchase()
+            }}
+          >
+            <ShoppingCart size={18} className="mr-2" />
+            Buy for {website.salePrice.toLocaleString()} ∞
+          </Button>
+        ) : (
+          <Button
+            className="w-full mt-4 cosmic-glow"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation()
+              onView()
+            }}
+          >
+            <Eye size={18} className="mr-2" />
+            View Website
+          </Button>
+        )}
       </div>
     </Card>
   )

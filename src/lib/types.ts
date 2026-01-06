@@ -1,3 +1,12 @@
+export type WebsiteTheme = 'cosmic' | 'minimal' | 'editorial' | 'technical' | 'vibrant'
+
+export interface Collaborator {
+  wallet: string
+  role: 'owner' | 'editor' | 'viewer'
+  addedAt: number
+  addedBy: string
+}
+
 export interface Website {
   id: string
   tokenId: string
@@ -11,6 +20,10 @@ export interface Website {
   createdAt: number
   lastModified: number
   pages: Page[]
+  theme: WebsiteTheme
+  collaborators: Collaborator[]
+  isListedForSale: boolean
+  salePrice?: number
 }
 
 export interface Page {
@@ -18,6 +31,7 @@ export interface Page {
   title: string
   content: string
   createdAt: number
+  author: string
 }
 
 export interface Token {
@@ -39,6 +53,7 @@ export interface Wallet {
   balance: number
   tokens: Token[]
   createdAt: number
+  infinityBalance: number
 }
 
 export interface MarketplaceListing {
@@ -48,6 +63,16 @@ export interface MarketplaceListing {
   price: number
   seller: string
   listedAt: number
+}
+
+export interface Transaction {
+  id: string
+  type: 'purchase' | 'sale' | 'listing' | 'delisting'
+  websiteId: string
+  from: string
+  to: string
+  amount: number
+  timestamp: number
 }
 
 export type ViewMode = 'home' | 'website' | 'wallet' | 'marketplace' | 'builder'

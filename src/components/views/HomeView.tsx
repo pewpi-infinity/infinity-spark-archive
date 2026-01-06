@@ -1,13 +1,23 @@
+import { useState } from 'react'
 import { InfinitySearch } from '@/components/InfinitySearch'
+import { ThemeSelector } from '@/components/ThemeSelector'
+import { WebsiteTheme } from '@/lib/types'
+import { Card } from '@/components/ui/card'
 
 interface HomeViewProps {
-  onCreateWebsite: (query: string) => void
+  onCreateWebsite: (query: string, theme: WebsiteTheme) => void
   isCreating: boolean
 }
 
 export function HomeView({ onCreateWebsite, isCreating }: HomeViewProps) {
+  const [selectedTheme, setSelectedTheme] = useState<WebsiteTheme>('cosmic')
+
+  const handleSearch = (query: string) => {
+    onCreateWebsite(query, selectedTheme)
+  }
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-4xl w-full space-y-16">
         <div className="text-center space-y-6">
           <h1 className="text-6xl md:text-8xl font-bold text-foreground tracking-tight">
@@ -20,9 +30,16 @@ export function HomeView({ onCreateWebsite, isCreating }: HomeViewProps) {
           </p>
         </div>
 
+        <Card className="cosmic-border bg-card/50 backdrop-blur-sm p-6">
+          <ThemeSelector
+            selectedTheme={selectedTheme}
+            onSelectTheme={setSelectedTheme}
+          />
+        </Card>
+
         <div className="w-full">
           <InfinitySearch
-            onSearch={onCreateWebsite}
+            onSearch={handleSearch}
             isLoading={isCreating}
             placeholder="What world will you build?"
             size="large"

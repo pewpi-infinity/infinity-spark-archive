@@ -1,0 +1,115 @@
+{
+  "name": "infinity-spark",
+  "version": "1.0.0",
+  "role": "builder",
+  "layer": "plus",
+  "description": "C13B0 - Self-building transformer that turns ideas into live websites, websites into tokens, and tokens into a tradable marketplace",
+  "inputs": [
+    "user-query",
+    "theme-selection",
+    "wallet-address",
+    "collaboration-requests",
+    "marketplace-transactions"
+  ],
+  "outputs": [
+    "live-website",
+    "website-token",
+    "wallet-creation",
+    "marketplace-listing",
+    "transaction-records"
+  ],
+  "dependencies": [
+    "spark-llm-api",
+    "spark-kv-persistence",
+    "spark-user-api"
+  ],
+  "exposed_commands": {
+    "create_website": "Generates a live website from user query with selected theme",
+    "mint_token": "Creates blockchain-style token representation of website",
+    "add_page": "Expands existing website with new research-backed page",
+    "list_for_sale": "Lists website-token in marketplace with ∞ price",
+    "purchase_website": "Transfers website ownership via ∞ currency exchange",
+    "add_collaborator": "Grants editor/viewer access to website",
+    "remove_collaborator": "Revokes collaborator access"
+  },
+  "ui_surfaces": {
+    "home": "Main Infinity search interface with theme selector",
+    "website": "Live website viewer with builder, collaboration, and selling controls",
+    "wallet": "User wallet showing tokens, balance, and transaction history",
+    "marketplace": "Trading interface for buying/selling website-tokens"
+  },
+  "economic_relevance": "yes",
+  "currency": "Infinity (∞)",
+  "settlement_layer": true,
+  "plateau_guarantees": [
+    "Wallet cannot be deleted",
+    "Minimum ∞ balance: 10000",
+    "Website availability guaranteed",
+    "Token ownership immutable without explicit transfer"
+  ],
+  "plus_features": [
+    "Additional ∞ from sales",
+    "Website value growth from pages",
+    "Trading profits",
+    "Collaboration networks",
+    "Marketplace prestige"
+  ],
+  "system_axioms": {
+    "every_website_is_a_token": true,
+    "every_token_is_a_website": true,
+    "infinity_is_settlement": true,
+    "one_click_deployment": true,
+    "no_staging": true,
+    "intent_is_truth": true
+  },
+  "failure_recovery": {
+    "auto_rebuild": true,
+    "intent_preservation": true,
+    "no_auth_blocks": true,
+    "reconstitution_capable": true
+  },
+  "themes": [
+    {
+      "name": "cosmic",
+      "description": "Deep space with vibrant accents"
+    },
+    {
+      "name": "minimal",
+      "description": "Clean and simple content focus"
+    },
+    {
+      "name": "editorial",
+      "description": "Magazine-style elegant typography"
+    },
+    {
+      "name": "technical",
+      "description": "Code-inspired monospace aesthetic"
+    },
+    {
+      "name": "vibrant",
+      "description": "Bold colors and energetic design"
+    }
+  ],
+  "collaboration_roles": [
+    {
+      "role": "owner",
+      "permissions": ["view", "edit", "add_pages", "list_for_sale", "add_collaborators", "transfer_ownership"]
+    },
+    {
+      "role": "editor",
+      "permissions": ["view", "edit", "add_pages"]
+    },
+    {
+      "role": "viewer",
+      "permissions": ["view"]
+    }
+  ],
+  "symbolic_cart_logic": {
+    "orchestrator": "🛒 C13B0",
+    "growth_signal": "📶",
+    "modulator": "🎛️",
+    "faceted_cart": "💎",
+    "completed_asset": "👑",
+    "invariant": "🛒 + 📶 → 🎛️ → 💎 → 👑"
+  }
+}
